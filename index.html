@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Relatório de Vendas</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+
+  <body>
+    <header class="header">
+      <div class="header-content">
+        <h1>📊 Relatório de Vendas</h1>
+        <p>Selecione um relatório CSV para visualizar os dados</p>
+      </div>
+    </header>
+
+    <main class="container">
+      <section class="upload-box">
+        <h2>📁 Selecionar Relatório</h2>
+
+        <div class="file-select">
+          <label>Arquivos disponíveis</label>
+          <select id="fileSelect">
+            <option value="">Selecione um arquivo...</option>
+          </select>
+        </div>
+      </section>
+
+      <section class="filters">
+        <div class="search-box">
+          <label>🔍 Buscar</label>
+          <input
+            type="text"
+            id="searchInput"
+            placeholder="Digite nome, email, saleId..."
+          />
+        </div>
+
+        <div class="filter-box">
+          <label>💳 Forma de pagamento</label>
+          <select id="paymentFilter">
+            <option value="">Todas</option>
+          </select>
+        </div>
+      </section>
+
+      <section class="cards">
+        <div class="card">
+          <h3>Total de Vendas</h3>
+          <p id="totalSales">0</p>
+        </div>
+
+        <div class="card">
+          <h3>Valor Total Sessões</h3>
+          <p id="totalValue">R$ 0,00</p>
+        </div>
+
+        <div class="card">
+          <h3>Total Descontos</h3>
+          <p id="totalDiscount">R$ 0,00</p>
+        </div>
+
+        <div class="card">
+          <h3>Total Líquido</h3>
+          <p id="totalNet">R$ 0,00</p>
+        </div>
+      </section>
+
+      <section class="table-section">
+        <h2>📋 Lista de Vendas</h2>
+
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>SaleId</th>
+                <th>Data da Venda</th>
+                <th>Comprador</th>
+                <th>Email</th>
+                <th>Telefone</th>
+                <th>CEP</th>
+                <th>Documento</th>
+                <th>Tipo de acesso</th>
+                <th>Qtd Sessões</th>
+                <th>Valor Sessões</th>
+                <th>Valor desconto</th>
+                <th>Forma pagamento</th>
+                <th>Emissor</th>
+              </tr>
+            </thead>
+            <tbody id="salesTable">
+              <tr>
+                <td colspan="13" class="empty">
+                  Selecione um arquivo para visualizar os dados.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- PAGINAÇÃO -->
+        <div class="pagination" id="pagination"></div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <p>Relatório CSV - Dashboard | Hospedável na Vercel</p>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+    <script src="scripts.js"></script>
+  </body>
+</html>
