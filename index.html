@@ -16,8 +16,10 @@
     </header>
 
     <main class="container">
-      <section class="upload-box">
-        <h2>📁 Selecionar Relatório</h2>
+      <section class="box">
+        <div class="box-header">
+          <h2>📁 Selecionar Relatório</h2>
+        </div>
 
         <div class="file-select">
           <label>Arquivos disponíveis</label>
@@ -28,7 +30,7 @@
       </section>
 
       <section class="filters">
-        <div class="search-box">
+        <div class="filter-item">
           <label>🔍 Buscar</label>
           <input
             type="text"
@@ -37,7 +39,7 @@
           />
         </div>
 
-        <div class="filter-box">
+        <div class="filter-item">
           <label>💳 Forma de pagamento</label>
           <select id="paymentFilter">
             <option value="">Todas</option>
@@ -67,8 +69,31 @@
         </div>
       </section>
 
-      <section class="table-section">
-        <h2>📋 Lista de Vendas</h2>
+      <section class="box chart-section">
+        <div class="chart-header">
+          <h2>📈 Maiores Vendedores</h2>
+
+          <div class="chart-controls">
+            <label>Quantidade:</label>
+            <select id="topSellerSelect">
+              <option value="5">Top 5</option>
+              <option value="10" selected>Top 10</option>
+              <option value="15">Top 15</option>
+              <option value="20">Top 20</option>
+              <option value="30">Top 30</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="chart-box">
+          <canvas id="topSellersChart"></canvas>
+        </div>
+      </section>
+
+      <section class="box table-section">
+        <div class="box-header">
+          <h2>📋 Lista de Vendas</h2>
+        </div>
 
         <div class="table-container">
           <table>
@@ -80,6 +105,7 @@
                 <th>Email</th>
                 <th>Telefone</th>
                 <th>CEP</th>
+                <th>Localidade</th>
                 <th>Documento</th>
                 <th>Tipo de acesso</th>
                 <th>Qtd Sessões</th>
@@ -89,9 +115,10 @@
                 <th>Emissor</th>
               </tr>
             </thead>
+
             <tbody id="salesTable">
               <tr>
-                <td colspan="13" class="empty">
+                <td colspan="14" class="empty">
                   Selecione um arquivo para visualizar os dados.
                 </td>
               </tr>
@@ -99,7 +126,6 @@
           </table>
         </div>
 
-        <!-- PAGINAÇÃO -->
         <div class="pagination" id="pagination"></div>
       </section>
     </main>
@@ -108,6 +134,7 @@
       <p>Relatório CSV - Dashboard | Surfland Garopaba SC - BRASIL</p>
     </footer>
 
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
     <script src="scripts.js"></script>
   </body>

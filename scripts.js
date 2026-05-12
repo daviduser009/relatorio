@@ -4,6 +4,11 @@ let filteredData = [];
 const ITEMS_PER_PAGE = 20;
 let currentPage = 1;
 
+const topSellerSelect = document.getElementById("topSellerSelect");
+const topSellersChartCanvas = document.getElementById("topSellersChart");
+
+let topSellersChart = null;
+
 const salesTable = document.getElementById("salesTable");
 const pagination = document.getElementById("pagination");
 
@@ -16,13 +21,13 @@ const totalValue = document.getElementById("totalValue");
 const totalDiscount = document.getElementById("totalDiscount");
 const totalNet = document.getElementById("totalNet");
 
+// Cache de CEP para evitar muitas requisições
+const cepCache = {};
+
 // Seus arquivos CSV fixos
 const csvFiles = [
-  { name: "17/11/2023 - 30/06/2024", file: "data/vendas_01.csv" },
-  { name: "01/07/2024 - 31/12/2024", file: "data/vendas_02.csv" },
-  { name: "01/01/2025 - 30/06/2025", file: "data/vendas_03.csv" },
-  { name: "01/07/2025 - 31/12/2025", file: "data/vendas_04.csv" },
-  { name: "01/01/2026 - 30/06/2026", file: "data/vendas_05.csv" },
+  { name: "2025", file: "data/vendas_2025.csv" },
+  { name: "2026", file: "data/vendas_2026.csv" },
 ];
 
 function formatMoney(value) {
@@ -35,6 +40,69 @@ function formatMoney(value) {
 
 function getNumber(value) {
   return parseFloat(value) || 0;
+}
+
+function formatDate(dateStr) {
+  if (!dateStr) return "";
+
+  const dateOnly = dateStr.split(" ")[0];
+  const [year, month, day] = dateOnly.split("-");
+
+  if (!year || !month || !day) return dateStr;
+
+  return `${day}/${month}/${year}`;
+}
+
+function normalizeCEP(cep) {
+  if (!cep) return "";
+  return cep.toString().replace(/\D/g, "");
+}
+
+async function getCepLocation(cep) {
+  const cleanCep = normalizeCEP(cep);
+
+  if (!cleanCep || cleanCep.length !== 8) {
+    return "CEP inválido";
+  }
+
+  if (cepCache[cleanCep]) {
+    return cepCache[cleanCep];
+  }
+
+  try {
+    const response = await fetch(`https://viacep.com.br/ws/${cleanCep}/json/`);
+    const data = await response.json();
+
+    if (data.erro) {
+      cepCache[cleanCep] = "CEP inválido";
+      return "CEP inválido";
+    }
+
+    const location = `${data.localidade} - ${data.uf}`;
+    cepCache[cleanCep] = location;
+
+    return location;
+  } catch (err) {
+    cepCache[cleanCep] = "CEP inválido";
+    return "CEP inválido";
+  }
+}
+
+async function loadCepLocations(data) {
+  const uniqueCeps = [...new Set(data.map((item) => normalizeCEP(item["CEP"])))];
+
+  for (const cep of uniqueCeps) {
+    if (!cep || cep.length !== 8) {
+      cepCache[cep] = "CEP inválido";
+      continue;
+    }
+
+    if (!cepCache[cep]) {
+      await getCepLocation(cep);
+    }
+  }
+
+  renderTable(filteredData, currentPage);
 }
 
 function updateSummary(data) {
@@ -76,7 +144,7 @@ function renderTable(data, page = 1) {
   if (data.length === 0) {
     salesTable.innerHTML = `
       <tr>
-        <td colspan="13" class="empty">Nenhum resultado encontrado.</td>
+        <td colspan="14" class="empty">Nenhum resultado encontrado.</td>
       </tr>
     `;
     pagination.innerHTML = "";
@@ -91,13 +159,18 @@ function renderTable(data, page = 1) {
   pageData.forEach((item) => {
     const tr = document.createElement("tr");
 
+    const cep = item["CEP"] || "";
+    const cleanCep = normalizeCEP(cep);
+    const cepLocation = cepCache[cleanCep] || "Carregando...";
+
     tr.innerHTML = `
       <td>${item["SaleId"] || ""}</td>
-      <td>${item["Data da Venda"] || ""}</td>
+      <td>${formatDate(item["Data da Venda"])}</td>
       <td>${item["Comprador"] || ""}</td>
       <td>${item["Email"] || ""}</td>
       <td>${item["Telefone"] || ""}</td>
-      <td>${item["CEP"] || ""}</td>
+      <td>${cep}</td>
+      <td>${cepLocation}</td>
       <td>${item["Documento Comprador"] || ""}</td>
       <td>${item["Tipo de acesso"] || ""}</td>
       <td>${item["Qtd Sessões"] || ""}</td>
@@ -175,6 +248,7 @@ function applyFilters() {
 
   updateSummary(filteredData);
   renderTable(filteredData, currentPage);
+  renderTopSellersChart(filteredData);
 }
 
 async function loadCSV(filePath) {
@@ -200,6 +274,9 @@ async function loadCSV(filePath) {
   updateSummary(filteredData);
   populatePaymentFilter(filteredData);
   renderTable(filteredData, currentPage);
+  renderTopSellersChart(filteredData);
+
+  await loadCepLocations(filteredData);
 }
 
 function loadAllFilesInSelect() {
@@ -210,6 +287,63 @@ function loadAllFilesInSelect() {
     option.value = file.file;
     option.textContent = file.name;
     fileSelect.appendChild(option);
+  });
+}
+
+function renderTopSellersChart(data) {
+  if (!topSellersChartCanvas) return;
+
+  const topN = parseInt(topSellerSelect.value);
+
+  const sellersMap = {};
+
+  data.forEach((item) => {
+    const seller = item["Emissor"]?.trim() || "Sem emissor";
+
+    if (!sellersMap[seller]) {
+      sellersMap[seller] = 0;
+    }
+
+    sellersMap[seller] += 1;
+  });
+
+  const sellersArray = Object.entries(sellersMap)
+    .map(([name, total]) => ({ name, total }))
+    .sort((a, b) => b.total - a.total)
+    .slice(0, topN);
+
+  const labels = sellersArray.map((s) => s.name);
+  const values = sellersArray.map((s) => s.total);
+
+  if (topSellersChart) {
+    topSellersChart.destroy();
+  }
+
+  topSellersChart = new Chart(topSellersChartCanvas, {
+    type: "bar",
+    data: {
+      labels: labels,
+      datasets: [
+        {
+          label: "Quantidade de Vendas",
+          data: values,
+          borderWidth: 1,
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: {
+          display: true,
+        },
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+        },
+      },
+    },
   });
 }
 
@@ -225,6 +359,10 @@ fileSelect.addEventListener("change", async () => {
 
 searchInput.addEventListener("input", applyFilters);
 paymentFilter.addEventListener("change", applyFilters);
+
+topSellerSelect.addEventListener("change", () => {
+  renderTopSellersChart(filteredData);
+});
 
 window.addEventListener("DOMContentLoaded", () => {
   loadAllFilesInSelect();
