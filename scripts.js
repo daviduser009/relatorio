@@ -394,7 +394,7 @@ function renderTopSellersChart(data) {
 
   const maxValue = Math.max(...sellersArray.map((s) => s.totalValue));
   const maxBarHeight = 260;
-  const showLabels = topN < 15;
+  const showLabels = topN < 20;
   const isBuyer = groupType === "Comprador";
 
   sellersArray.forEach((seller) => {
