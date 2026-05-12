@@ -185,12 +185,75 @@ tbody tr:hover {
 }
 
 /* PAGINAÇÃO */
-.pagination {
+.pagination-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.pagination-scroll {
   display: flex;
   gap: 8px;
-  justify-content: center;
-  margin-top: 18px;
-  flex-wrap: wrap;
+  overflow-x: auto;
+  padding: 10px;
+  max-width: 100%;
+  scroll-behavior: smooth;
+  border-radius: 14px;
+}
+
+.pagination-scroll::-webkit-scrollbar {
+  height: 6px;
+}
+
+.pagination-scroll::-webkit-scrollbar-thumb {
+  background: #cfd8e3;
+  border-radius: 10px;
+}
+
+.pagination-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.pagination-scroll button {
+  flex: 0 0 auto;
+  padding: 9px 13px;
+  border: 1px solid #ddd;
+  background: white;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 700;
+  transition: 0.2s;
+}
+
+.pagination-scroll button:hover {
+  background: #f2f6ff;
+}
+
+.pagination-scroll button.active {
+  background: #1d4ed8;
+  color: white;
+  border-color: #1d4ed8;
+}
+
+.pagination-arrow {
+  padding: 10px 14px;
+  border-radius: 14px;
+  border: 1px solid #ddd;
+  background: white;
+  font-weight: 800;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.pagination-arrow:hover {
+  background: #f2f6ff;
+}
+
+.pagination-arrow:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .pagination button {
@@ -259,7 +322,7 @@ tbody tr:hover {
 /* Aqui é o segredo: limitar altura e deixar bonito */
 .chart-box {
   width: 100%;
-  height: 360px;
+  min-height: 420px;
   padding: 12px;
   border-radius: 16px;
   border: 1px solid #eee;
@@ -279,4 +342,96 @@ tbody tr:hover {
   margin-top: 25px;
   color: #666;
   font-size: 14px;
+}
+
+.custom-chart {
+  width: 100%;
+  height: 100%;
+  min-height: 360px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 18px;
+  border-radius: 16px;
+  background: #fbfcff;
+  border: 1px solid #e5e7eb;
+}
+
+.custom-chart::-webkit-scrollbar {
+  height: 8px;
+}
+
+.custom-chart::-webkit-scrollbar-thumb {
+  background: #cfd8e3;
+  border-radius: 10px;
+}
+
+.chart-bar {
+  flex: 1 1 0;
+  width: auto;
+  min-width: 24px;
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  position: relative;
+}
+
+.chart-bar .bar {
+  width: 100%;
+  border-radius: 0;
+  background: linear-gradient(180deg, #3b82f6, #1d4ed8);
+  box-shadow: 0px 6px 12px rgba(29, 78, 216, 0.2);
+  height: 0;
+  transition: height 0.6s ease;
+  cursor: pointer;
+}
+
+.chart-bar .label {
+  font-size: 11px;
+  color: #374151;
+  font-weight: 600;
+  transform: none;
+  width: 100%;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.chart-tooltip {
+  position: absolute;
+  bottom: 110%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #111827;
+  color: white;
+  padding: 8px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: 0.2s;
+  z-index: 9999;
+}
+
+.chart-tooltip::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 7px;
+  border-style: solid;
+  border-color: #111827 transparent transparent transparent;
+}
+
+.chart-bar:hover .chart-tooltip {
+  opacity: 1;
 }

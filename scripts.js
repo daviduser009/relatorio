@@ -5,9 +5,7 @@ const ITEMS_PER_PAGE = 20;
 let currentPage = 1;
 
 const topSellerSelect = document.getElementById("topSellerSelect");
-const topSellersChartCanvas = document.getElementById("topSellersChart");
 
-let topSellersChart = null;
 
 const salesTable = document.getElementById("salesTable");
 const pagination = document.getElementById("pagination");
@@ -289,9 +287,11 @@ function loadAllFilesInSelect() {
     fileSelect.appendChild(option);
   });
 }
-
 function renderTopSellersChart(data) {
-  if (!topSellersChartCanvas) return;
+  const chartContainer = document.getElementById("topSellersChart");
+  if (!chartContainer) return;
+
+  chartContainer.innerHTML = "";
 
   const topN = parseInt(topSellerSelect.value);
 
@@ -300,9 +300,7 @@ function renderTopSellersChart(data) {
   data.forEach((item) => {
     const seller = item["Emissor"]?.trim() || "Sem emissor";
 
-    if (!sellersMap[seller]) {
-      sellersMap[seller] = 0;
-    }
+    if (!sellersMap[seller]) sellersMap[seller] = 0;
 
     sellersMap[seller] += 1;
   });
@@ -312,38 +310,46 @@ function renderTopSellersChart(data) {
     .sort((a, b) => b.total - a.total)
     .slice(0, topN);
 
-  const labels = sellersArray.map((s) => s.name);
-  const values = sellersArray.map((s) => s.total);
-
-  if (topSellersChart) {
-    topSellersChart.destroy();
+  if (sellersArray.length === 0) {
+    chartContainer.innerHTML = `<p style="color:#666;font-weight:600;">Nenhum dado disponível.</p>`;
+    return;
   }
 
-  topSellersChart = new Chart(topSellersChartCanvas, {
-    type: "bar",
-    data: {
-      labels: labels,
-      datasets: [
-        {
-          label: "Quantidade de Vendas",
-          data: values,
-          borderWidth: 1,
-        },
-      ],
-    },
-    options: {
-      responsive: true,
-      plugins: {
-        legend: {
-          display: true,
-        },
-      },
-      scales: {
-        y: {
-          beginAtZero: true,
-        },
-      },
-    },
+  const maxValue = Math.max(...sellersArray.map((s) => s.total));
+  const maxBarHeight = 260;
+  const showLabels = topN < 15;
+
+  sellersArray.forEach((seller) => {
+    const barWrapper = document.createElement("div");
+    barWrapper.classList.add("chart-bar");
+
+    const tooltip = document.createElement("div");
+    tooltip.classList.add("chart-tooltip");
+    tooltip.innerHTML = `
+      ${seller.name}<br/>
+      <span style="color:#60a5fa;">${seller.total} vendas</span>
+    `;
+
+    const bar = document.createElement("div");
+    bar.classList.add("bar");
+
+    const heightPx =
+      maxValue > 0
+        ? Math.max(12, Math.round((seller.total / maxValue) * maxBarHeight))
+        : 0;
+    bar.style.height = `${heightPx}px`;
+
+    barWrapper.appendChild(tooltip);
+    barWrapper.appendChild(bar);
+
+    if (showLabels) {
+      const label = document.createElement("div");
+      label.classList.add("label");
+      label.textContent = seller.name;
+      barWrapper.appendChild(label);
+    }
+
+    chartContainer.appendChild(barWrapper);
   });
 }
 

@@ -86,7 +86,7 @@
         </div>
 
         <div class="chart-box">
-          <canvas id="topSellersChart"></canvas>
+          <div id="topSellersChart" class="custom-chart"></div>
         </div>
       </section>
 
@@ -126,15 +126,20 @@
           </table>
         </div>
 
-        <div class="pagination" id="pagination"></div>
+        <div class="pagination-wrapper">
+            <button class="pagination-arrow" id="prevPageBtn">◀</button>
+
+            <div class="pagination-scroll" id="pagination"></div>
+
+            <button class="pagination-arrow" id="nextPageBtn">▶</button>
+        </div>
       </section>
     </main>
 
     <footer class="footer">
-      <p>Relatório CSV - Dashboard | Surfland Garopaba SC - BRASIL</p>
+      <p>Relatório e Dashboard | Surfland Garopaba SC - BRASIL</p>
     </footer>
 
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
     <script src="scripts.js"></script>
   </body>
