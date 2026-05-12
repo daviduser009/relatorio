@@ -320,14 +320,7 @@ tbody tr:hover {
 }
 
 /* Aqui é o segredo: limitar altura e deixar bonito */
-.chart-box {
-  width: 100%;
-  min-height: 420px;
-  padding: 12px;
-  border-radius: 16px;
-  border: 1px solid #eee;
-  background: #fbfcff;
-}
+
 
 /* Faz o canvas respeitar o tamanho do container */
 .chart-box canvas {
