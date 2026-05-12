@@ -1,7 +1,7 @@
 let originalData = [];
 let filteredData = [];
 
-const ITEMS_PER_PAGE = 20;
+const ITEMS_PER_PAGE = 15;
 let currentPage = 1;
 
 const topSellerSelect = document.getElementById("topSellerSelect");
