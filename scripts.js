@@ -18,11 +18,11 @@ const totalNet = document.getElementById("totalNet");
 
 // Seus arquivos CSV fixos
 const csvFiles = [
-  { name: "Relatório 01", file: "data/vendas_01.csv" },
-  { name: "Relatório 02", file: "data/vendas_02.csv" },
-  { name: "Relatório 03", file: "data/vendas_03.csv" },
-  { name: "Relatório 04", file: "data/vendas_04.csv" },
-  { name: "Relatório 05", file: "data/vendas_05.csv" },
+  { name: "17/11/2023 - 30/06/2024", file: "data/vendas_01.csv" },
+  { name: "01/07/2024 - 31/12/2024", file: "data/vendas_02.csv" },
+  { name: "01/01/2025 - 30/06/2025", file: "data/vendas_03.csv" },
+  { name: "01/07/2025 - 31/12/2025", file: "data/vendas_04.csv" },
+  { name: "01/01/2026 - 30/06/2026", file: "data/vendas_05.csv" },
 ];
 
 function formatMoney(value) {
