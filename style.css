@@ -392,12 +392,29 @@ tbody tr:hover {
 }
 
 .chart-bar .label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
   font-size: 11px;
   color: #374151;
   font-weight: 600;
   transform: none;
   width: 100%;
   text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.chart-bar .label .label-name {
+  display: block;
+}
+
+.chart-bar .label .label-value {
+  display: block;
+  font-size: 10px;
+  color: #6b7280;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;

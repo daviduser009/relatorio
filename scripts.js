@@ -5,7 +5,7 @@ const ITEMS_PER_PAGE = 20;
 let currentPage = 1;
 
 const topSellerSelect = document.getElementById("topSellerSelect");
-
+const topGroupSelect = document.getElementById("topGroupSelect");
 
 const salesTable = document.getElementById("salesTable");
 const pagination = document.getElementById("pagination");
@@ -271,6 +271,7 @@ async function loadCSV(filePath) {
 
   updateSummary(filteredData);
   populatePaymentFilter(filteredData);
+  populateChartGroupSelect(filteredData);
   renderTable(filteredData, currentPage);
   renderTopSellersChart(filteredData);
 
@@ -287,6 +288,61 @@ function loadAllFilesInSelect() {
     fileSelect.appendChild(option);
   });
 }
+function formatCompactValue(value) {
+  const amount = Math.abs(Number(value) || 0);
+
+  if (amount >= 1000000) {
+    const millions = amount / 1000000;
+    const formatted = millions.toLocaleString("pt-BR", {
+      maximumFractionDigits: 1,
+      minimumFractionDigits: 0,
+    });
+    return `R$ ${formatted} ${millions === 1 ? "milhão" : "milhões"}`;
+  }
+
+  if (amount >= 1000) {
+    const thousands = amount / 1000;
+    const formatted = thousands.toLocaleString("pt-BR", {
+      maximumFractionDigits: 1,
+      minimumFractionDigits: 0,
+    });
+    return `R$ ${formatted} mil`;
+  }
+
+  return `R$ ${amount.toLocaleString("pt-BR")}`;
+}
+
+function populateChartGroupSelect(data) {
+  if (!topGroupSelect) return;
+
+  const hasSeller = data.some(
+    (item) => item["Emissor"] && item["Emissor"].toString().trim() !== ""
+  );
+  const hasBuyer = data.some(
+    (item) => item["Comprador"] && item["Comprador"].toString().trim() !== ""
+  );
+
+  topGroupSelect.innerHTML = "";
+
+  if (hasSeller) {
+    const option = document.createElement("option");
+    option.value = "vendedor";
+    option.textContent = "Maiores Vendedores";
+    topGroupSelect.appendChild(option);
+  }
+
+  if (hasBuyer) {
+    const option = document.createElement("option");
+    option.value = "comprador";
+    option.textContent = "Maiores Compradores";
+    topGroupSelect.appendChild(option);
+  }
+
+  if (!topGroupSelect.value || ![...topGroupSelect.options].some((opt) => opt.value === topGroupSelect.value)) {
+    topGroupSelect.value = hasSeller ? "vendedor" : hasBuyer ? "comprador" : "";
+  }
+}
+
 function renderTopSellersChart(data) {
   const chartContainer = document.getElementById("topSellersChart");
   if (!chartContainer) return;
@@ -294,20 +350,41 @@ function renderTopSellersChart(data) {
   chartContainer.innerHTML = "";
 
   const topN = parseInt(topSellerSelect.value);
+  const groupType = topGroupSelect?.value === "comprador" ? "Comprador" : "Emissor";
+  const chartTitle = document.querySelector(".chart-header h2");
+
+  if (chartTitle) {
+    chartTitle.textContent =
+      groupType === "Comprador"
+        ? "📈 Maiores Compradores"
+        : "📈 Maiores Vendedores";
+  }
 
   const sellersMap = {};
 
   data.forEach((item) => {
-    const seller = item["Emissor"]?.trim() || "Sem emissor";
+    const person = item[groupType]?.toString().trim() ||
+      (groupType === "Comprador" ? "Sem comprador" : "Sem emissor");
+    const value = getNumber(item["Valor Sessões"]);
 
-    if (!sellersMap[seller]) sellersMap[seller] = 0;
+    if (!sellersMap[person]) {
+      sellersMap[person] = {
+        totalValue: 0,
+        totalSales: 0,
+      };
+    }
 
-    sellersMap[seller] += 1;
+    sellersMap[person].totalValue += value;
+    sellersMap[person].totalSales += 1;
   });
 
   const sellersArray = Object.entries(sellersMap)
-    .map(([name, total]) => ({ name, total }))
-    .sort((a, b) => b.total - a.total)
+    .map(([name, stats]) => ({
+      name,
+      totalValue: stats.totalValue,
+      totalSales: stats.totalSales,
+    }))
+    .sort((a, b) => b.totalValue - a.totalValue)
     .slice(0, topN);
 
   if (sellersArray.length === 0) {
@@ -315,9 +392,10 @@ function renderTopSellersChart(data) {
     return;
   }
 
-  const maxValue = Math.max(...sellersArray.map((s) => s.total));
+  const maxValue = Math.max(...sellersArray.map((s) => s.totalValue));
   const maxBarHeight = 260;
   const showLabels = topN < 15;
+  const isBuyer = groupType === "Comprador";
 
   sellersArray.forEach((seller) => {
     const barWrapper = document.createElement("div");
@@ -327,7 +405,8 @@ function renderTopSellersChart(data) {
     tooltip.classList.add("chart-tooltip");
     tooltip.innerHTML = `
       ${seller.name}<br/>
-      <span style="color:#60a5fa;">${seller.total} vendas</span>
+      <span style="color:#60a5fa;">${formatCompactValue(seller.totalValue)}</span><br/>
+      <span style="color:#93c5fd;">${seller.totalSales} ${isBuyer ? "compras" : "vendas"}</span>
     `;
 
     const bar = document.createElement("div");
@@ -335,7 +414,7 @@ function renderTopSellersChart(data) {
 
     const heightPx =
       maxValue > 0
-        ? Math.max(12, Math.round((seller.total / maxValue) * maxBarHeight))
+        ? Math.max(12, Math.round((seller.totalValue / maxValue) * maxBarHeight))
         : 0;
     bar.style.height = `${heightPx}px`;
 
@@ -345,7 +424,10 @@ function renderTopSellersChart(data) {
     if (showLabels) {
       const label = document.createElement("div");
       label.classList.add("label");
-      label.textContent = seller.name;
+      label.innerHTML = `
+        <span class="label-name">${seller.name}</span>
+        <span class="label-value">${formatCompactValue(seller.totalValue)}</span>
+      `;
       barWrapper.appendChild(label);
     }
 
@@ -367,6 +449,10 @@ searchInput.addEventListener("input", applyFilters);
 paymentFilter.addEventListener("change", applyFilters);
 
 topSellerSelect.addEventListener("change", () => {
+  renderTopSellersChart(filteredData);
+});
+
+topGroupSelect?.addEventListener("change", () => {
   renderTopSellersChart(filteredData);
 });
 
